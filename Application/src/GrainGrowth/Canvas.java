@@ -12,8 +12,8 @@ public class Canvas extends JComponent {
     private final boolean b = false; 
     private int sizeX = Constants.boardWidth;
     private int sizeY = Constants.boardHeight;
-    private final int maximumX = Constants.boardWidth;
-    private final int maximumY = Constants.boardHeight;
+    private int maximumX = Constants.boardWidth;
+    private int maximumY = Constants.boardHeight;
     
     /// Value that indicates if edge should be hidden or not
     private boolean shouldShowEdge;
@@ -90,6 +90,8 @@ public class Canvas extends JComponent {
     public void resizeBoard(int x, int y) {
         this.sizeX = x;
         this.sizeY = y;
+        this.maximumX = x;
+        this.maximumY = y;
     }
     
     public void setGrains(Grain[][] grains){

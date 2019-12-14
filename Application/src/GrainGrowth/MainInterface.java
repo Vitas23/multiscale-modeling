@@ -66,6 +66,7 @@ public class MainInterface extends javax.swing.JFrame {
     }
     
     private void generateNewBoard() {
+        // Wygenerowanie planszy x/y
         board = new Board(sizeX, sizeY);
         boardGrain = new Grain[sizeX][sizeY];
         for (int i = 0; i < sizeX; i++) {
@@ -126,7 +127,7 @@ public class MainInterface extends javax.swing.JFrame {
         jLabel6 = new javax.swing.JLabel();
         inclusionsAmount = new javax.swing.JTextField();
         inclusionsSize = new javax.swing.JTextField();
-        inclusionShapeComboBox = new javax.swing.JComboBox<String>();
+        inclusionShapeComboBox = new javax.swing.JComboBox<>();
         addInclusionsButton = new javax.swing.JButton();
         radiusLabel = new javax.swing.JLabel();
         radiusText = new javax.swing.JTextField();
@@ -336,12 +337,12 @@ public class MainInterface extends javax.swing.JFrame {
 
         NeighborhoodComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Moore", "von Neumann'a", "-", "-", "-", "-", "-", "-", "-" }));
         NeighborhoodComboBox.addPopupMenuListener(new javax.swing.event.PopupMenuListener() {
-            public void popupMenuCanceled(javax.swing.event.PopupMenuEvent evt) {
+            public void popupMenuWillBecomeVisible(javax.swing.event.PopupMenuEvent evt) {
             }
             public void popupMenuWillBecomeInvisible(javax.swing.event.PopupMenuEvent evt) {
                 NeighborhoodComboBoxPopupMenuWillBecomeInvisible(evt);
             }
-            public void popupMenuWillBecomeVisible(javax.swing.event.PopupMenuEvent evt) {
+            public void popupMenuCanceled(javax.swing.event.PopupMenuEvent evt) {
             }
         });
         NeighborhoodComboBox.addActionListener(new java.awt.event.ActionListener() {
@@ -353,12 +354,12 @@ public class MainInterface extends javax.swing.JFrame {
 
         ConditionsComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Losowe", "Stała odległość", "Stała ilość ziaren" }));
         ConditionsComboBox.addPopupMenuListener(new javax.swing.event.PopupMenuListener() {
-            public void popupMenuCanceled(javax.swing.event.PopupMenuEvent evt) {
+            public void popupMenuWillBecomeVisible(javax.swing.event.PopupMenuEvent evt) {
             }
             public void popupMenuWillBecomeInvisible(javax.swing.event.PopupMenuEvent evt) {
                 ConditionsComboBoxPopupMenuWillBecomeInvisible(evt);
             }
-            public void popupMenuWillBecomeVisible(javax.swing.event.PopupMenuEvent evt) {
+            public void popupMenuCanceled(javax.swing.event.PopupMenuEvent evt) {
             }
         });
         jPanel1.add(ConditionsComboBox, new org.netbeans.lib.awtextra.AbsoluteConstraints(970, 310, 160, 30));
@@ -451,7 +452,7 @@ public class MainInterface extends javax.swing.JFrame {
         });
         jPanel1.add(inclusionsSize, new org.netbeans.lib.awtextra.AbsoluteConstraints(660, 460, 130, -1));
 
-        inclusionShapeComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "square", "circular" }));
+        inclusionShapeComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "square", "circular" }));
         inclusionShapeComboBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 inclusionShapeComboBoxActionPerformed(evt);
@@ -537,6 +538,7 @@ public class MainInterface extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private BufferedImage map( int sizeX, int sizeY, boolean showBoundary){
+        // naniesienie pliku na plansze X/Y
     final BufferedImage res = new BufferedImage( sizeX, sizeY, BufferedImage.TYPE_INT_RGB );
             for(int j=0;j<MainInterface.sizeY;j++){
             for(int i=0;i<MainInterface.sizeX;i++){
@@ -612,31 +614,25 @@ public class MainInterface extends javax.swing.JFrame {
     }//GEN-LAST:event_ClearButtonActionPerformed
 
     private void GenerateButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_GenerateButtonActionPerformed
+        sizeX = Integer.parseInt(countXText.getText());
+        sizeY = Integer.parseInt(countYText.getText());
+
         canvas.resizeBoard(Integer.parseInt(countXText.getText()), Integer.parseInt(countYText.getText()));
         canvas.setPreferredSize(new java.awt.Dimension(Integer.parseInt(countXText.getText()), Integer.parseInt(countYText.getText())));
         canvas.setSize(Integer.parseInt(countXText.getText()), Integer.parseInt(countYText.getText()));
-        
-        sizeX = Integer.parseInt(countXText.getText());
-        sizeY = Integer.parseInt(countYText.getText());
+        canvas.setMaximumSize(new java.awt.Dimension(Integer.parseInt(countXText.getText()), Integer.parseInt(countYText.getText())));
+        canvas.setMinimumSize(new java.awt.Dimension(Integer.parseInt(countXText.getText()), Integer.parseInt(countYText.getText())));
+        // Usttawienie planszy x/y i wygenerowanie jej na nowo
+     
         this.generateNewBoard();
         
-        if (isMonteCarlo) {
-            monteCarlo = new MonteCarlo(sizeX, sizeY, Integer.parseInt(randomSeedsCountText.getText()));
-            boardGrain = monteCarlo.randomBoard();
-            canvas.setGrains(boardGrain);
-            canvas.repaint();
-        } else {
-            boardGrain = board.clear();           
-            boardGrain = board.randomBoard(3,  
-                Integer.parseInt(countXText.getText()),                 
-                Integer.parseInt(countYText.getText()),                
-                Integer.parseInt(randomSeedsCountText.getText()),
-                1,              
-                Integer.parseInt(randomSeedsCountText.getText()));          
-            canvas.setGrains(boardGrain);                                  
-            canvas.repaint();                                              
-            jLabel9.setText("" + board.getCountGrainsCristal());
-        }
+        boardGrain = board.clear();           
+        boardGrain = board.randomBoard(
+            1,              
+            Integer.parseInt(randomSeedsCountText.getText()));          
+        canvas.setGrains(boardGrain);                                  
+        canvas.repaint();                                              
+        jLabel9.setText("" + board.getCountGrainsCristal());
     }//GEN-LAST:event_GenerateButtonActionPerformed
 
     private void ConditionsComboBoxPopupMenuWillBecomeInvisible(javax.swing.event.PopupMenuEvent evt) {//GEN-FIRST:event_ConditionsComboBoxPopupMenuWillBecomeInvisible
@@ -844,6 +840,10 @@ public class MainInterface extends javax.swing.JFrame {
     }//GEN-LAST:event_inclusionShapeComboBoxActionPerformed
 
     private void addInclusionsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addInclusionsButtonActionPerformed
+        if (shouldRunSimulationLoop) {
+            return;
+        }
+        
         int size = Integer.parseInt(inclusionsSize.getText());
         int amount = Integer.parseInt(inclusionsAmount.getText());
         int shape = inclusionShapeComboBox.getSelectedIndex();
@@ -866,11 +866,11 @@ public class MainInterface extends javax.swing.JFrame {
                 y0 = rand.nextInt(sizeY);
             }
             
-            if (shape == 0) {
-                int a = (int)((size/1.44)/2);    
-                for(int stepX = -a; stepX <a; stepX++) {
-                    for(int stepY = -a; stepY <a; stepY++) {
-                        if(x0+stepX < sizeX && x0+stepX > 0 && y0+stepY < sizeY && y0+stepY >0 ) {
+            if (shape == 0) { // if inclusion is square
+                int a = (int)((size/1.44)/2);    // a /pierw z 2/2 -  srodek kwadratu
+                for(int stepX = -a; stepX <a; stepX++) { // srodek -x x
+                    for(int stepY = -a; stepY <a; stepY++) { // srodek -y  y
+                        if(x0+stepX < sizeX && x0+stepX > 0 && y0+stepY < sizeY && y0+stepY >0 ) { // sprawdzamy czy nie wyjdzie poza kwadrat
                             boardGrain[x0+stepX][y0+stepY].setId(-1);
                             boardGrain[x0+stepX][y0+stepY].setRGB(255,255,255);
                         }
@@ -880,7 +880,7 @@ public class MainInterface extends javax.swing.JFrame {
             else {
                 for(int y=-size; y<=size; y++)
                     for(int x=-size; x<=size; x++)
-                        if(x*x+y*y <= size*size && x0+x < sizeX && x0+x>0 && y0+y < sizeY && y0+y>0)
+                        if(x*x+y*y <= size*size && x0+x < sizeX && x0+x>0 && y0+y < sizeY && y0+y>0) 
                             boardGrain[x0+x][y0+y].setId(-1);
             }       
         }
@@ -899,79 +899,27 @@ public class MainInterface extends javax.swing.JFrame {
     }//GEN-LAST:event_countXTextActionPerformed
 
     private void startSimulation() {
-        if (isMonteCarlo) {
-            shouldRunSimulationLoop = true;
-            while (shouldRunSimulationLoop) {
-                iterationNumber++;
-                jLabel12.setText("Iteration: " + iterationNumber);
-                boardGrain = monteCarlo.calculate();
-                canvas.setGrains(boardGrain);
-                canvas.repaint();
-                if (monteCarlo.getChanged() == 0) {
-                    shouldRunSimulationLoop = false;
-                }
-            }
-        } else {
-            shouldRunSimulationLoop = true;
-            while (shouldRunSimulationLoop) {
-                iterationNumber++;
-                jLabel12.setText("Iteration: " + iterationNumber);
-                boardGrain = board.calculate(
-                    NeighborhoodComboBox.getSelectedIndex(),
-                    Integer.parseInt(radiusText.getText())
-                );
-                shouldRunSimulationLoop = board.ammountOfNotEmptyCells() != (sizeX * sizeY);
-                canvas.setGrains(boardGrain);
-                canvas.repaint();
+        shouldRunSimulationLoop = true;
+        while (shouldRunSimulationLoop) {
+            iterationNumber++;
+            jLabel12.setText("Iteration: " + iterationNumber);
+            boardGrain = board.calculate(
+                NeighborhoodComboBox.getSelectedIndex(),
+                Integer.parseInt(radiusText.getText())
+            );
+            shouldRunSimulationLoop = board.ammountOfNotEmptyCells() != (sizeX * sizeY);
+            canvas.setGrains(boardGrain);
 
-                if (!shouldRunSimulationLoop) {
-                    boardGrain = board.edge();
-                    jLabel9.setText("" + board.getCountGrainsCristal());
-                    thread.stop();
-                }
+            if (!shouldRunSimulationLoop) {
+                boardGrain = board.edge();
+                jLabel9.setText("" + board.getCountGrainsCristal());
+                canvas.repaint();
+                thread.stop();
             }
         }
     }
 
     private void startRecristalizationSimulation() {
-
-        if (isMonteCarlo) {
-            monteCarlo = new MonteCarlo(sizeX, sizeY, boardGrain);
-            shouldRunSimulationLoop = true;
-            while (shouldRunSimulationLoop) {
-                iterationNumber++;
-                jLabel12.setText("Iteration: " + iterationNumber);
-                boardGrain = monteCarlo.calculate();
-                canvas.setGrains(boardGrain);
-                canvas.repaint();
-                if (monteCarlo.getChanged() == 0) {
-                    shouldRunSimulationLoop = false;
-                }
-            }
-        } else {
-            shouldRunSimulationLoop = true;
-            while (shouldRunSimulationLoop) {
-                iterationNumber++;
-                jLabel12.setText("Iteration: " + iterationNumber);
-                try {
-                    Thread.sleep(30);
-                } catch (InterruptedException ex) {
-                    Logger.getLogger(MainInterface.class.getName()).log(Level.SEVERE, null, ex);
-                }
-                dT += 0.001;
-                boardGrain = board.recristalizationCalculate(NeighborhoodComboBox.getSelectedIndex(), dT);
-                shouldRunSimulationLoop = board.recrystal() != (sizeX * sizeY);
-                canvas.setGrains(boardGrain);
-                canvas.repaint();
-                jLabel9.setText("" + board.getCountGrainsRecristal());
-                if (!shouldRunSimulationLoop) {
-                    boardGrain = board.edge();
-                    board.clearRecrystal();
-                    thread.stop();
-                }
-            }
-        }
-
     }
 
     public class HandlerClass implements MouseListener, MouseMotionListener {

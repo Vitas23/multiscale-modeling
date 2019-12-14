@@ -26,9 +26,6 @@ public class Board {
     private boolean isPeriodic;
     private boolean shouldEndSimulation;
 
-    private final double reA = 86710969050178.5;
-    private final double reB = 9.41268203527779;
-    private final double roMax = 28105600.95;
     private double ro = 0;
     private double roSr = 0;
     private double recrystalizationPercentage;
@@ -83,76 +80,39 @@ public class Board {
         isPeriodic = !isPeriodic;
     }
 
-    public Grain[][] randomBoard(int randomSetup, int countX, int countY, int randomSize, int ringSize, int countRing) {
-        switch (randomSetup) {
-            case 0:
+    public Grain[][] randomBoard(int ringSize, int countRing) {
+        ArrayList<Point> points = new ArrayList<>();
 
-                for (int i = 0; i < sizeX; i++) {
-                    for (int j = 0; j < sizeY; j++) {
-                        if (random.nextInt(1000) > 998) {
-                            n++;
-                            grainsArray[i][j].setId(n);
-                        }
-                    }
-                }
+        for (int i = 0; i < countRing; i++) {
+            int spr = 0;
+            int randX = random.nextInt(sizeX);
+            int randY = random.nextInt(sizeY);
+            boolean findOk = false;
+            while (spr < 100) {
+                spr++;
+                findOk = true;
 
-                break;
-            case 1:
-
-                for (int i = countX; i < sizeX; i += countX) {
-                    for (int j = countY; j < sizeY; j += countY) {
-                        n++;
-                        grainsArray[i][j].setId(n);
-                    }
-                }
-
-                break;
-            case 2:
-
-                for (int i = 0; i < randomSize; i++) {
-                    n++;
-                    grainsArray[random.nextInt(sizeX)][random.nextInt(sizeY)].setId(n);
-                }
-
-                break;
-            case 3:
-
-                ArrayList<Point> points = new ArrayList<>();
-
-                for (int i = 0; i < countRing; i++) {
-                    int spr = 0;
-                    int randX = random.nextInt(sizeX);
-                    int randY = random.nextInt(sizeY);
-                    boolean findOk = false;
-                    while (spr < 100) {
-                        spr++;
-                        findOk = true;
-
-                        for (Point p : points) {
-                            findOk = true;
-
-                            if (!p.point2point(randX, randY, ringSize)) {
-                                findOk = false;
-                                randX = random.nextInt(sizeX);
-                                randY = random.nextInt(sizeY);
-                                break;
-                            }
-                        }
-                        if (findOk) {
-                            n++;
-                            points.add(new Point(randX, randY, 0, n));
-                            break;
-                        }
-                    }
-                }
                 for (Point p : points) {
-                    grainsArray[p.getX()][p.getY()].setId(p.getId());
-                }
+                    findOk = true;
 
-                break;
-            default:
-                break;
+                    if (!p.point2point(randX, randY, ringSize)) {
+                        findOk = false;
+                        randX = random.nextInt(sizeX);
+                        randY = random.nextInt(sizeY);
+                        break;
+                    }
+                }
+                if (findOk) {
+                    n++;
+                    points.add(new Point(randX, randY, 0, n));
+                    break;
+                }
+            }
         }
+        for (Point p : points) {
+            grainsArray[p.getX()][p.getY()].setId(p.getId());
+        }
+
         countGrainsCristal = n;
         return grainsArray;
     }
@@ -257,19 +217,10 @@ public class Board {
 
         for (int i = 0; i < sizeX; i++) {
             for (int j = 0; j < sizeY; j++) {
-                if (grainsArray[i][j].getId() == 0) {
+                if (grainsArray[i][j].getId() == 0) { // if empty cell
                     shouldEndSimulation = false;
-                    if (neighborhoodType == 7) {
-                        temporaryBoardArray[i][j] = randomArea(i, j, r);
-                    } 
-                    else if (neighborhoodType == 8)
-                    {
-                        temporaryBoardArray[i][j] = extendedMoorArea(i,j);
-                    }
-                    else {
-                        tmp = createArea(i, j, neighborhoodType, false);
-                        temporaryBoardArray[i][j] = checkNeighborhood(tmp);
-                    }
+                    tmp = createArea(i, j, neighborhoodType);
+                    temporaryBoardArray[i][j] = checkNeighborhood(tmp);
                 }
             }
         }
@@ -284,171 +235,17 @@ public class Board {
 
     /// Recristalization calculation
     public Grain[][] recristalizationCalculate(int areaSetup, double dT) {
-        shouldEndSimulation = true;
-        double suma = 0;
-        ro = reA / reB + (1 - (reA / reB)) * Math.exp(-1 * reB * dT);
-        System.out.print(String.format("%.12f   ",ro));
-        roSr = ro / (sizeX * sizeY);
-
-        for (int i = 0; i < sizeX; i++) {
-            for (int j = 0; j < sizeY; j++) {
-                
-                if ( (grainsArray[i][j].isBoundary() || contentGrains ) && !grainsArray[i][j].isR()) {
-                    if (random.nextDouble() > (1 - recrystalizationPercentage/100)) { // zwiększa ro tylko % ziaren
-                        double add = roSr * (1.2 + random.nextDouble() * 0.6);
-                        grainsArray[i][j].addRo(add);
-                        shouldEndSimulation = false;
-                    }
-                    if (grainsArray[i][j].getRo() > roMax) {
-                        n++;
-                        grainsArray[i][j].setId(n);
-                        grainsArray[i][j].setB(false);
-                        grainsArray[i][j].setR(true);
-                        grainsArray[i][j].setRo(0);
-                        countGrainsRecristal++;
-                        shouldEndSimulation = false;
-                    }
-                } else {
-                    double add = roSr * (random.nextDouble() * 0.3);
-                    grainsArray[i][j].addRo(add);
-                }
-            }
-        }
-        
-
-        for (int i = 0; i < sizeX; i++) {
-            for (int j = 0; j < sizeY; j++) {
-                grainsTemporaryArray[i][j].setId(grainsArray[i][j].getId());
-            }
-        }
-
-        int tmp[][] = new int[3][3];
-
-        for (int i = 0; i < sizeX; i++) {
-            for (int j = 0; j < sizeY; j++) {
-                if (!grainsArray[i][j].isR()){
-                    if (areaSetup == 7) {
-                        tmp = createArea(i, j, 6, true);
-                        temporaryBoardArray[i][j] = checkNeighborhood(tmp);
-                    } else {
-                        tmp = createArea(i, j, areaSetup, true);
-                        temporaryBoardArray[i][j] = checkNeighborhood(tmp);
-                    }
-                    grainsTemporaryArray[i][j].setId(temporaryBoardArray[i][j]);
-                }
-            }
-        }
-
-        for (int i = 0; i < sizeX; i++) {
-            for (int j = 0; j < sizeY; j++) {
-                if (grainsTemporaryArray[i][j].getId() > 0) {
-
-                    shouldEndSimulation = false;
-                    grainsArray[i][j].setId(grainsTemporaryArray[i][j].getId());
-                    grainsArray[i][j].setB(false);
-                    grainsArray[i][j].setR(true);
-                    grainsArray[i][j].setRo(0);
-                }
-            }
-        }
-        
-        for (int i = 0; i < sizeX; i++) {
-            for (int j = 0; j < sizeY; j++) {
-                suma += grainsArray[i][j].getRo();
-            }
-        }
-        System.out.println(String.format("%.12f",suma));
-        
         return grainsArray;
-
     }
-    
-    private int randomArea(int x, int y, int r) {
-        int tmp[][];
-        tmp = new int[2 * r + 1][2 * r + 1];
-
-        for (int i = 0; i < 2 * r + 1; i++) {
-            for (int j = 0; j < 2 * r + 1; j++) {
-                float r_tmp = (float) (Math.sqrt(Math.pow(r - i, 2) + Math.pow(r - j, 2)));
-                if (r < r_tmp) {
-                    tmp[i][j] = 0;
-                } else {
-                    int xl = (x - r + i) % sizeX;
-                    xl = xl < 0 ? sizeX - 1 : xl;
-
-                    int yl = (y - r + j) % sizeY;
-                    yl = yl < 0 ? sizeY - 1 : yl;
-
-                    if (isPeriodic) {
-                        tmp[i][j] = grainsArray[xl][yl].getId();
-                    } else {
-                        if ((x - r + i) >= 0 && (x - r + i) < sizeX && (y - r + j) >= 0 && (y - r + j) < sizeY) {
-                            tmp[i][j] = grainsArray[xl][yl].getId();
-                        } else {
-                            tmp[i][j] = 0;
-                        }
-                    }
-
-                }
-            }
-        }
-
-        ArrayList<Point> areas = new ArrayList<Point>();
-        ArrayList<Point> maxAreas = new ArrayList<Point>();
-        int max = 0;
-        boolean find = false;
-
-        for (int i = 0; i < 2 * r + 1; i++) {
-            for (int j = 0; j < 2 * r + 1; j++) {
-                if (tmp[i][j] != 0) {
-
-                    find = false;
-                    for (int l = 0; l < areas.size(); l++) {
-                        if (tmp[i][j] == areas.get(l).getId()) {
-                            areas.get(l).increaseValue();
-                            find = true;
-                            max = max < areas.get(l).getValue() ? areas.get(l).getValue() : max;
-                            break;
-                        }
-                    }
-
-                    if (!find) {
-                        areas.add(new Point(i, j, 1, tmp[i][j]));
-                        max = max < 1 ? 1 : max;
-                    }
-                }
-            }
-        }
-
-        if (max == 0) {
-            return 0;
-        } else {
-            for (int l = 0; l < areas.size(); l++) {
-                if (max == areas.get(l).getValue()) {
-                    maxAreas.add(areas.get(l));
-                }
-            }
-            return maxAreas.get(new Random().nextInt(maxAreas.size())).getId();
-        }
-
-    }
-    
-    private int[][] createArea(int i, int j, int neighborhoodType, boolean isRecrystalization) {
+        
+    private int[][] createArea(int i, int j, int neighborhoodType) {
         int tmp[][] = new int[3][3];
 
         for (int k = 0; k < 3; k++) {
             for (int l = 0; l < 3; l++) {
                 int l_x = (sizeX + (i - 1 + k)) % sizeX;
                 int l_y = (sizeY + (j - 1 + l)) % sizeY;
-                if (isRecrystalization) {
-                    if (grainsArray[l_x][l_y].isR()) {
-                        tmp[k][l] = grainsArray[l_x][l_y].getId();
-                    } else {
-                        tmp[k][l] = 0;
-                    }
-                } else {
-                    tmp[k][l] = grainsArray[l_x][l_y].getId();
-                }
+                tmp[k][l] = grainsArray[l_x][l_y].getId();
             }
         }
 
@@ -475,96 +272,78 @@ public class Board {
             }
         }
 
-        int currentNeighborhood = neighborhoodType;
-        boolean isRandom = true;
-        while (isRandom) {
-            switch (currentNeighborhood) {
-                case 0: //moor
-                {
-                    isRandom = false;
-                    break;
-                }
-                case 1: //neumann
-                {
-                    tmp[0][0] = 0;
-                    tmp[2][0] = 0;
-                    tmp[0][2] = 0;
-                    tmp[2][2] = 0;
-                    isRandom = false;
-                    break;
-                }
-                case 2: //hex L
-                {
-                    tmp[0][2] = 0;
-                    tmp[2][0] = 0;
-                    isRandom = false;
-                    break;
-                }
-                case 3: //hex P
-                {
-                    tmp[0][0] = 0;
-                    tmp[2][2] = 0;
-                    isRandom = false;
-                    break;
-                }
-                case 4: //hex R
-                {
-                    if (random.nextBoolean()) {
-                        tmp[0][2] = 0;
-                        tmp[2][0] = 0;
-                    } else {
-                        tmp[0][0] = 0;
-                        tmp[2][2] = 0;
-                    }
-                    isRandom = false;
-                    break;
-                }
-                case 5: //pen L
-                {
-                    int randPent = random.nextInt(4);
-                    if (randPent == 0) {
-                        for (int k = 0; k < 3; k++) {
-                            tmp[0][k] = 0;
-                        }
-                    } else if (randPent == 1) {
-                        for (int k = 0; k < 3; k++) {
-                            tmp[k][0] = 0;
-                        }
-                    } else if (randPent == 2) {
-                        for (int k = 0; k < 3; k++) {
-                            tmp[2][k] = 0;
-                        }
-                    } else {
-                        for (int k = 0; k < 3; k++) {
-                            tmp[k][2] = 0;
-                        }
-                    }
-                    isRandom = false;
-                    break;
-                }
-                case 6: //rand
-                {
-                    currentNeighborhood = random.nextInt(5);
-                    break;
-                }
-                case 7: //for moor extended
-                {
-                    tmp[0][1] = 0;
-                    tmp[1][0] = 0;
-                    tmp[1][2] = 0;
-                    tmp[2][1] = 0;
-                    isRandom = false;
-                    break;
-                }
-                default:
-                    isRandom = false;
-                    break;
+            switch (neighborhoodType) {
+            case 0: //moor
+            {
+                break;
             }
+            case 1: //neumann
+            {
+                tmp[0][0] = 0;
+                tmp[2][0] = 0;
+                tmp[0][2] = 0;
+                tmp[2][2] = 0;
+                break;
+            }
+            case 2: //hex L
+            {
+                tmp[0][2] = 0;
+                tmp[2][0] = 0;
+                break;
+            }
+            case 3: //hex P
+            {
+                tmp[0][0] = 0;
+                tmp[2][2] = 0;
+                break;
+            }
+            case 4: //hex R
+            {
+                if (random.nextBoolean()) {
+                    tmp[0][2] = 0;
+                    tmp[2][0] = 0;
+                } else {
+                    tmp[0][0] = 0;
+                    tmp[2][2] = 0;
+                }
+                break;
+            }
+            case 5: //pen L
+            {
+                int randPent = random.nextInt(4);
+                if (randPent == 0) {
+                    for (int k = 0; k < 3; k++) {
+                        tmp[0][k] = 0;
+                    }
+                } else if (randPent == 1) {
+                    for (int k = 0; k < 3; k++) {
+                        tmp[k][0] = 0;
+                    }
+                } else if (randPent == 2) {
+                    for (int k = 0; k < 3; k++) {
+                        tmp[2][k] = 0;
+                    }
+                } else {
+                    for (int k = 0; k < 3; k++) {
+                        tmp[k][2] = 0;
+                    }
+                }
+                break;
+            }
+            case 7:
+            {
+                tmp[0][1] = 0;
+                tmp[1][0] = 0;
+                tmp[1][2] = 0;
+                tmp[2][1] = 0;
+                break;
+            }
+            default:
+                break;
         }
         return tmp;
     }
     
-    // Checks neighborhood and return ID of the seed that dominate in this area 
     // Checks neighborhood and return ID of the seed that dominate in this area 
     private int checkNeighborhood(int[][] tab) {  
         List<Integer> list = new ArrayList<Integer>(); 
@@ -575,12 +354,8 @@ public class Board {
                 list.add(tab[i][j]);
             }
         }
-        if( list.size() != 0) {
-            return mostCommon(list);
-        } else {
-            return 0;
-        }
         
+        return list.isEmpty() ? 0 : mostCommon(list);
     }
     
     public static <T> T mostCommon(List<T> list) {
@@ -600,28 +375,6 @@ public class Board {
 
         return max.getKey();
     }
-        
-    private int extendedMoorArea(int x, int y) {
-        int tmp[][] = new int[3][3];
-        HashSet<Integer> uniqueIds = new HashSet<>();
-        
-        /// Applying rules
-        LinkedHashMap<Integer, Integer> configurations = new LinkedHashMap<Integer, Integer>(){{put(0,5); put(1,3); put(7,3);}};
-        Set<Map.Entry<Integer,Integer>> configurationsSet = configurations.entrySet(); 
-
-        for (Map.Entry<Integer, Integer> it : configurationsSet){
-            tmp = createArea(x ,y ,it.getKey(), false);
-            uniqueIds = getUniqueIdsFromNeighborhood(tmp);
-            for(Integer id : uniqueIds)
-                 if (countOccurrence(id, tmp) > it.getValue()) return id;
-        }
-        
-        tmp = createArea(x ,y ,0, false);
-        
-        /// Applying propability
-        if(random.nextInt(100)> 80) return checkNeighborhood(tmp);
-        else return 0;
-    }
     
     private HashSet<Integer> getUniqueIdsFromNeighborhood(int tmp[][]) {
         HashSet<Integer> uniqueIds = new HashSet<>();
@@ -639,4 +392,26 @@ public class Board {
         
         return count;
     }
+        
+//    private int extendedMoorArea(int x, int y) {
+//        int tmp[][] = new int[3][3];
+//        HashSet<Integer> uniqueIds = new HashSet<>();
+//        
+//        /// Applying rules
+//        LinkedHashMap<Integer, Integer> configurations = new LinkedHashMap<Integer, Integer>(){{put(0,5); put(1,3); put(7,3);}};
+//        Set<Map.Entry<Integer,Integer>> configurationsSet = configurations.entrySet(); 
+//
+//        for (Map.Entry<Integer, Integer> it : configurationsSet){
+//            tmp = createArea(x ,y ,it.getKey());
+//            uniqueIds = getUniqueIdsFromNeighborhood(tmp);
+//            for(Integer id : uniqueIds)
+//                 if (countOccurrence(id, tmp) > it.getValue()) return id;
+//        }
+//        
+//        tmp = createArea(x ,y ,0);
+//        
+//        /// Applying propability
+//        if(random.nextInt(100)> 80) return checkNeighborhood(tmp);
+//        else return 0;
+//    }
 }
