@@ -205,7 +205,7 @@ public class Board {
     }
     
     /// One thread calculation
-    public Grain[][] calculate(int neighborhoodType, int r) {
+    public Grain[][] calculate(int neighborhoodType, int r, int probability) {
         shouldEndSimulation = true;
         int tmp[][] = new int[3][3];
 
@@ -219,8 +219,15 @@ public class Board {
             for (int j = 0; j < sizeY; j++) {
                 if (grainsArray[i][j].getId() == 0) { // if empty cell
                     shouldEndSimulation = false;
-                    tmp = createArea(i, j, neighborhoodType);
-                    temporaryBoardArray[i][j] = checkNeighborhood(tmp);
+                    if (neighborhoodType == 8)
+                    {
+                        temporaryBoardArray[i][j] = extendedMoorArea(i,j, probability);
+                    }
+                    else {
+                        tmp = createArea(i, j, neighborhoodType);
+                        temporaryBoardArray[i][j] = checkNeighborhood(tmp);
+                    }
+
                 }
             }
         }
@@ -376,6 +383,27 @@ public class Board {
         return max.getKey();
     }
     
+        private int extendedMoorArea(int x, int y, int probability) {
+        int tmp[][] = new int[3][3];
+        int prob = probability > 0 && probability < 100 ? probability : 30;
+        HashSet<Integer> uniqueIds = new HashSet<>();
+        
+        LinkedHashMap<Integer, Integer> configurations = new LinkedHashMap<Integer, Integer>(){{put(0,5); put(1,3); put(7,3);}};
+        Set<Map.Entry<Integer,Integer>> configurationsSet = configurations.entrySet(); 
+
+        for (Map.Entry<Integer, Integer> it : configurationsSet){
+            tmp = createArea(x ,y ,it.getKey());
+            uniqueIds = getUniqueIdsFromNeighborhood(tmp);
+            for(Integer id : uniqueIds)
+                 if (countOccurrence(id, tmp) > it.getValue()) return id;
+        }
+        
+        tmp = createArea(x ,y ,0);
+        
+        if(random.nextInt(100) > (100 - prob)) return checkNeighborhood(tmp);
+        else return 0;
+    }
+    
     private HashSet<Integer> getUniqueIdsFromNeighborhood(int tmp[][]) {
         HashSet<Integer> uniqueIds = new HashSet<>();
         for(int i =0;i<3;i++)
@@ -392,26 +420,4 @@ public class Board {
         
         return count;
     }
-        
-//    private int extendedMoorArea(int x, int y) {
-//        int tmp[][] = new int[3][3];
-//        HashSet<Integer> uniqueIds = new HashSet<>();
-//        
-//        /// Applying rules
-//        LinkedHashMap<Integer, Integer> configurations = new LinkedHashMap<Integer, Integer>(){{put(0,5); put(1,3); put(7,3);}};
-//        Set<Map.Entry<Integer,Integer>> configurationsSet = configurations.entrySet(); 
-//
-//        for (Map.Entry<Integer, Integer> it : configurationsSet){
-//            tmp = createArea(x ,y ,it.getKey());
-//            uniqueIds = getUniqueIdsFromNeighborhood(tmp);
-//            for(Integer id : uniqueIds)
-//                 if (countOccurrence(id, tmp) > it.getValue()) return id;
-//        }
-//        
-//        tmp = createArea(x ,y ,0);
-//        
-//        /// Applying propability
-//        if(random.nextInt(100)> 80) return checkNeighborhood(tmp);
-//        else return 0;
-//    }
 }

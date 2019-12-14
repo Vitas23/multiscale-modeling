@@ -132,6 +132,9 @@ public class MainInterface extends javax.swing.JFrame {
         radiusLabel = new javax.swing.JLabel();
         radiusText = new javax.swing.JTextField();
         canvas = new GrainGrowth.Canvas();
+        jPanel3 = new javax.swing.JPanel();
+        jLabel7 = new javax.swing.JLabel();
+        probabilityInput = new javax.swing.JTextField();
         jMenuBar1 = new javax.swing.JMenuBar();
         ImportMenu = new javax.swing.JMenu();
         FromBitmapImport = new javax.swing.JMenuItem();
@@ -335,7 +338,7 @@ public class MainInterface extends javax.swing.JFrame {
         });
         jPanel1.add(StopButton, new org.netbeans.lib.awtextra.AbsoluteConstraints(660, 150, 280, 60));
 
-        NeighborhoodComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Moore", "von Neumann'a", "-", "-", "-", "-", "-", "-", "-" }));
+        NeighborhoodComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Moore", "von Neumann'a", "-", "-", "-", "-", "-", "-", "Extended Moore" }));
         NeighborhoodComboBox.addPopupMenuListener(new javax.swing.event.PopupMenuListener() {
             public void popupMenuWillBecomeVisible(javax.swing.event.PopupMenuEvent evt) {
             }
@@ -484,6 +487,16 @@ public class MainInterface extends javax.swing.JFrame {
         canvas.setDoubleBuffered(true);
         canvas.setPreferredSize(new java.awt.Dimension(620, 500));
         jPanel1.add(canvas, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 10, 630, 500));
+
+        jLabel7.setText("Extended Moore probability:");
+        jPanel3.add(jLabel7);
+
+        probabilityInput.setText("50");
+        probabilityInput.setMinimumSize(new java.awt.Dimension(100, 26));
+        probabilityInput.setPreferredSize(new java.awt.Dimension(50, 26));
+        jPanel3.add(probabilityInput);
+
+        jPanel1.add(jPanel3, new org.netbeans.lib.awtextra.AbsoluteConstraints(400, 520, 240, 40));
 
         getContentPane().add(jPanel1, new java.awt.GridBagConstraints());
 
@@ -905,15 +918,16 @@ public class MainInterface extends javax.swing.JFrame {
             jLabel12.setText("Iteration: " + iterationNumber);
             boardGrain = board.calculate(
                 NeighborhoodComboBox.getSelectedIndex(),
-                Integer.parseInt(radiusText.getText())
+                Integer.parseInt(radiusText.getText()),
+                Integer.parseInt(probabilityInput.getText())
             );
             shouldRunSimulationLoop = board.ammountOfNotEmptyCells() != (sizeX * sizeY);
             canvas.setGrains(boardGrain);
+            canvas.repaint();
 
             if (!shouldRunSimulationLoop) {
                 boardGrain = board.edge();
                 jLabel9.setText("" + board.getCountGrainsCristal());
-                canvas.repaint();
                 thread.stop();
             }
         }
@@ -971,12 +985,14 @@ public class MainInterface extends javax.swing.JFrame {
     }
 
     private void mouseC(int x, int y) {
-        int xp = (int) Math.floor(x / (Constants.boardWidth / sizeX));
-        int yp = (int) Math.floor(y / (Constants.boardHeight / sizeY));
-        boardGrain = board.addGrain(xp, yp);
-        canvas.setGrains(boardGrain);
-        canvas.repaint();
-        jLabel9.setText("" + board.getCountGrainsCristal());
+        if (x < sizeX && y < sizeY) {
+            int xp = (int) Math.floor(x / (Constants.boardWidth / sizeX));
+            int yp = (int) Math.floor(y / (Constants.boardHeight / sizeY));
+            boardGrain = board.addGrain(xp, yp);
+            canvas.setGrains(boardGrain);
+            canvas.repaint();
+            jLabel9.setText("" + board.getCountGrainsCristal());
+        }
     }
 
     public static void main(String args[]) {
@@ -1025,12 +1041,14 @@ public class MainInterface extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
+    private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel8;
     private javax.swing.JLabel jLabel9;
     private javax.swing.JMenuBar jMenuBar1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel10;
     private javax.swing.JPanel jPanel2;
+    private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
     private javax.swing.JPanel jPanel5;
     private javax.swing.JPanel jPanel6;
@@ -1039,6 +1057,7 @@ public class MainInterface extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel9;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JSeparator jSeparator2;
+    private javax.swing.JTextField probabilityInput;
     private javax.swing.JLabel radiusLabel;
     private javax.swing.JTextField radiusText;
     private javax.swing.JTextField randomSeedsCountText;
