@@ -14,7 +14,7 @@ public class Board {
     /// MARK: Variables
     private final int sizeX;
     private final int sizeY;
-    private final  Grain[][] grainsArray;
+    private Grain[][] grainsArray;
     private final Grain[][] grainsTemporaryArray;
     private final int[][] temporaryBoardArray;
  
@@ -117,15 +117,23 @@ public class Board {
         return grainsArray;
     }
 
-    public Grain[][] clear() {
+    public Grain[][] clear(boolean clearGb) {
         for (int i = 0; i < sizeX; i++) {
             for (int j = 0; j < sizeY; j++) {
-                grainsArray[i][j].setId(0);
+                if (clearGb) {
+                    grainsArray[i][j].setId(0);
+                } else if (grainsArray[i][j].getId() != -2) {
+                     grainsArray[i][j].setId(0);
+                }
             }
         }
         for (int i = 0; i < sizeX; i++) {
             for (int j = 1; j < sizeY; j++) {
-                grainsArray[i][j].setB(false);
+                if (clearGb) {
+                    grainsArray[i][j].setB(false);
+                } else if (grainsArray[i][j].getId() != -2) {
+                    grainsArray[i][j].setB(false);
+                }
             }
         }
         n = 0;
@@ -419,5 +427,94 @@ public class Board {
                 if (id == tmp[i][j]) count++;
         
         return count;
+    }
+    
+    Grain[][] growBoundaries(int size , ArrayList<Integer> selectedGrainList) {
+        grainsArray = edge();
+        ArrayList<Grain> grainToSet = new ArrayList<Grain>();
+        if(selectedGrainList.isEmpty())
+        {
+            for (int k = size -1; k > 0; k--)
+            {
+            for (int i = 0; i < sizeX; i++) {
+                for (int j = 0; j < sizeY; j++) {
+                    if (hasBoundariesInNeighbourhood(i,j))
+                    {
+                        grainToSet.add(grainsArray[i][j]);
+                    }
+                }
+            }
+            for(Grain grain : grainToSet)
+            {
+                grain.setB(true);
+                grain.setId(-2);
+            }
+            
+            }
+        }
+        else
+        {
+            for (int k = size -1; k > 0; k--)
+            {
+            for (int i = 0; i < sizeX; i++) {
+                for (int j = 0; j < sizeY; j++) {
+                    if (hasBoundariesInNeighbourhood(i,j) && selectedGrainList.contains(grainsArray[i][j].getId()))
+                    {
+                        System.out.println("Adding grain to set: " + grainsArray[i][j].getId());
+                        grainToSet.add(grainsArray[i][j]);
+                    }
+                }
+            }
+            clearEdgedifferentThan(selectedGrainList);
+            for(Grain grain : grainToSet)
+            {
+                grain.setB(true);
+            }
+        }
+        }
+        drawBoundaries();
+        return grainsArray;
+    }
+    
+    public String getGbPercent() {
+        float counter = 0;
+        
+        for (int i = 0; i < sizeX; i++) {
+            for (int j = 0; j < sizeY; j++) {
+                if (grainsArray[i][j].getId() == -2)
+                    counter++;
+            }
+        }
+        
+        return "GB[%]: " + Float.toString(counter/(sizeX * sizeY) * 100);
+    }
+    
+    private void clearEdgedifferentThan(ArrayList<Integer> selectedGrainList) {
+        for (int i = 0; i < sizeX; i++) {
+            for (int j = 0; j < sizeY; j++) {
+                if(grainsArray[i][j].isBoundary() && !selectedGrainList.contains(grainsArray[i][j].getId()))
+                    grainsArray[i][j].setB(false);
+            }
+        }
+    }
+    
+    boolean hasBoundariesInNeighbourhood(int x, int y) {
+        for (int i = x-1; i <= x+1 && i>0 && i< sizeX; i++) {
+            for (int j = y-1; j <= y+1 && j>0 && j< sizeY; j++) {
+                if(grainsArray[i][j].isBoundary()) return true;
+            }
+        }
+        return false;
+    }
+    
+    void drawBoundaries() {
+        for (int i = 0; i < sizeX; i++) {
+            for (int j = 0; j < sizeY; j++) {
+                if(grainsArray[i][j].isBoundary()) {
+                    System.out.println(grainsArray[i][j].getId());
+                    grainsArray[i][j].setId(-2);
+                }
+            }
+        }
     }
 }

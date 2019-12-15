@@ -46,7 +46,9 @@ public class Canvas extends JComponent {
                         grains[i][j].setRGB(0, 0, 0);
                     } else if(grain == -1){
                         grains[i][j].setRGB(255,255,255);
-                    } else{
+                    } else if(grain == -2){
+                        grains[i][j].setRGB(200,200,200);
+                    } else {
                         switch(grain%3) {
                             case 0:
                                 R=(grain*10+100)%254;
