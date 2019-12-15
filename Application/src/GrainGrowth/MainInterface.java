@@ -45,7 +45,13 @@ public class MainInterface extends javax.swing.JFrame {
         iterationNumber = 0;
         monteCarlo = new MonteCarlo();
         isMonteCarlo = false;
-        this.generateNewBoard();
+        board = new Board(sizeX, sizeY);
+        boardGrain = new Grain[sizeX][sizeY];
+        for (int i = 0; i < sizeX; i++) {
+            for (int j = 0; j < sizeY; j++) {
+                boardGrain[i][j] = new Grain(); /// Filling the board             
+            }
+        }
         initComponents();
         ConditionsComboBox.setVisible(false);
         jLabel10.setVisible(false);
@@ -68,13 +74,7 @@ public class MainInterface extends javax.swing.JFrame {
     
     private void generateNewBoard() {
         // Wygenerowanie planszy x/y
-        board = new Board(sizeX, sizeY);
-        boardGrain = new Grain[sizeX][sizeY];
-        for (int i = 0; i < sizeX; i++) {
-            for (int j = 0; j < sizeY; j++) {
-                boardGrain[i][j] = new Grain(); /// Filling the board             
-            }
-        }
+
     }
 
     @SuppressWarnings("unchecked")
@@ -143,6 +143,8 @@ public class MainInterface extends javax.swing.JFrame {
         jPanel11 = new javax.swing.JPanel();
         jLabel13 = new javax.swing.JLabel();
         gbSizeInput = new javax.swing.JTextField();
+        dualPhaseButton = new javax.swing.JButton();
+        substructureButton = new javax.swing.JButton();
         jMenuBar1 = new javax.swing.JMenuBar();
         ImportMenu = new javax.swing.JMenu();
         FromBitmapImport = new javax.swing.JMenuItem();
@@ -159,9 +161,9 @@ public class MainInterface extends javax.swing.JFrame {
         setSize(new java.awt.Dimension(950, 650));
         getContentPane().setLayout(new java.awt.GridBagLayout());
 
-        jPanel1.setMaximumSize(new java.awt.Dimension(950, 650));
-        jPanel1.setMinimumSize(new java.awt.Dimension(950, 650));
-        jPanel1.setPreferredSize(new java.awt.Dimension(1150, 600));
+        jPanel1.setMaximumSize(new java.awt.Dimension(950, 750));
+        jPanel1.setMinimumSize(new java.awt.Dimension(950, 750));
+        jPanel1.setPreferredSize(new java.awt.Dimension(1150, 750));
         jPanel1.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
         jPanel9.setLayout(new java.awt.GridBagLayout());
@@ -477,7 +479,7 @@ public class MainInterface extends javax.swing.JFrame {
                 addInclusionsButtonActionPerformed(evt);
             }
         });
-        jPanel1.add(addInclusionsButton, new org.netbeans.lib.awtextra.AbsoluteConstraints(660, 500, 280, 60));
+        jPanel1.add(addInclusionsButton, new org.netbeans.lib.awtextra.AbsoluteConstraints(660, 500, 280, 40));
 
         radiusLabel.setText("Promień:");
         jPanel1.add(radiusLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(1030, 170, -1, 22));
@@ -512,7 +514,7 @@ public class MainInterface extends javax.swing.JFrame {
                 growBoundariesuButtonActionPerformed(evt);
             }
         });
-        jPanel1.add(growBoundariesuButton, new org.netbeans.lib.awtextra.AbsoluteConstraints(780, 570, -1, -1));
+        jPanel1.add(growBoundariesuButton, new org.netbeans.lib.awtextra.AbsoluteConstraints(630, 580, -1, -1));
 
         selectedGrainsList.setText("Selected grains: []");
         jPanel1.add(selectedGrainsList, new org.netbeans.lib.awtextra.AbsoluteConstraints(150, 560, 320, 50));
@@ -522,7 +524,7 @@ public class MainInterface extends javax.swing.JFrame {
 
         clearBoundariesCheckbox.setSelected(true);
         clearBoundariesCheckbox.setText("Clear boundaries");
-        jPanel1.add(clearBoundariesCheckbox, new org.netbeans.lib.awtextra.AbsoluteConstraints(640, 570, -1, -1));
+        jPanel1.add(clearBoundariesCheckbox, new org.netbeans.lib.awtextra.AbsoluteConstraints(640, 550, -1, -1));
 
         jLabel13.setText("GB Size");
         jPanel11.add(jLabel13);
@@ -538,6 +540,22 @@ public class MainInterface extends javax.swing.JFrame {
         jPanel11.add(gbSizeInput);
 
         jPanel1.add(jPanel11, new org.netbeans.lib.awtextra.AbsoluteConstraints(400, 520, 240, 40));
+
+        dualPhaseButton.setText("DualPhase");
+        dualPhaseButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                dualPhaseButtonActionPerformed(evt);
+            }
+        });
+        jPanel1.add(dualPhaseButton, new org.netbeans.lib.awtextra.AbsoluteConstraints(780, 570, -1, -1));
+
+        substructureButton.setText("Substructure");
+        substructureButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                substructureButtonActionPerformed(evt);
+            }
+        });
+        jPanel1.add(substructureButton, new org.netbeans.lib.awtextra.AbsoluteConstraints(780, 540, -1, -1));
 
         getContentPane().add(jPanel1, new java.awt.GridBagConstraints());
 
@@ -661,9 +679,10 @@ public class MainInterface extends javax.swing.JFrame {
     private void ClearButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ClearButtonActionPerformed
         iterationNumber = 0;
         jLabel12.setText("Iteration: " + iterationNumber);
-        boardGrain = board.clear(clearBoundariesCheckbox.isSelected());
+        boardGrain = board.clear(clearBoundariesCheckbox.isSelected(), true);
         selectedGrainList = new ArrayList<>();
         selectedGrainsList.setText("Selected grains list: " + selectedGrainList);
+         gbPercentField.setText("GB[%]: 0");
         canvas.setGrains(boardGrain);
         canvas.repaint();
         jLabel9.setText("" + board.getCountGrainsCristal());
@@ -680,9 +699,17 @@ public class MainInterface extends javax.swing.JFrame {
         canvas.setMinimumSize(new java.awt.Dimension(Integer.parseInt(countXText.getText()), Integer.parseInt(countYText.getText())));
         // Usttawienie planszy x/y i wygenerowanie jej na nowo
      
-        this.generateNewBoard();
+        if (boardGrain[0].length != sizeX || boardGrain[1].length != sizeY) {
+            board = new Board(sizeX, sizeY);
+            boardGrain = new Grain[sizeX][sizeY];
+            for (int i = 0; i < sizeX; i++) {
+                for (int j = 0; j < sizeY; j++) {
+                    boardGrain[i][j] = new Grain(); /// Filling the board             
+                }
+            }
+        }
         
-        boardGrain = board.clear(clearBoundariesCheckbox.isSelected());     
+        boardGrain = board.clear(clearBoundariesCheckbox.isSelected(), false);     
         boardGrain = board.randomBoard(
             1,              
             Integer.parseInt(randomSeedsCountText.getText()));          
@@ -965,6 +992,23 @@ public class MainInterface extends javax.swing.JFrame {
         // TODO add your handling code here:
     }//GEN-LAST:event_gbSizeInputActionPerformed
 
+    private void dualPhaseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_dualPhaseButtonActionPerformed
+        boardGrain = board.dualPhaseIdChange(selectedGrainList);
+        canvas.setGrains(boardGrain);
+        canvas.repaint();
+        selectedGrainList.clear();
+        selectedGrainsList.setText("Selected grains list: " + selectedGrainList);
+    }//GEN-LAST:event_dualPhaseButtonActionPerformed
+
+    private void substructureButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_substructureButtonActionPerformed
+        boardGrain = board.removeAllGrainsExceptSelected(selectedGrainList);
+        canvas.setGrains(boardGrain);
+        canvas.repaint();
+        selectedGrainList.clear();
+        selectedGrainsList.setText("Selected grains list: " + selectedGrainList);
+                shouldRunSimulationLoop = false;
+    }//GEN-LAST:event_substructureButtonActionPerformed
+
     private void startSimulation() {
         shouldRunSimulationLoop = true;
         selectedGrainList = new ArrayList<>();
@@ -978,14 +1022,15 @@ public class MainInterface extends javax.swing.JFrame {
                 Integer.parseInt(radiusText.getText()),
                 Integer.parseInt(probabilityInput.getText())
             );
+            
             shouldRunSimulationLoop = board.ammountOfNotEmptyCells() != (sizeX * sizeY);
-
+                            canvas.setGrains(boardGrain);
+            canvas.repaint();
 
             if (!shouldRunSimulationLoop) {
                 boardGrain = board.edge();
                 jLabel9.setText("" + board.getCountGrainsCristal());
-                            canvas.setGrains(boardGrain);
-            canvas.repaint();
+
                 thread.stop();
             }
         }
@@ -1099,6 +1144,7 @@ public class MainInterface extends javax.swing.JFrame {
     private javax.swing.JLabel colorValueLabel;
     private javax.swing.JTextField countXText;
     private javax.swing.JTextField countYText;
+    private javax.swing.JButton dualPhaseButton;
     private javax.swing.JLabel gbPercentField;
     private javax.swing.JTextField gbSizeInput;
     private javax.swing.JButton growBoundariesuButton;
@@ -1143,6 +1189,7 @@ public class MainInterface extends javax.swing.JFrame {
     private javax.swing.JTextField ringSizeField;
     private javax.swing.JLabel selectedGrainsList;
     private javax.swing.JRadioButtonMenuItem showGrainsBorders;
+    private javax.swing.JButton substructureButton;
     private javax.swing.JLabel xLabelSize;
     // End of variables declaration//GEN-END:variables
 }

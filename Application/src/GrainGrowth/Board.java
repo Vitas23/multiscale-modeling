@@ -117,21 +117,21 @@ public class Board {
         return grainsArray;
     }
 
-    public Grain[][] clear(boolean clearGb) {
+    public Grain[][] clear(boolean clearGb, boolean clearExinsting) {
         for (int i = 0; i < sizeX; i++) {
             for (int j = 0; j < sizeY; j++) {
-                if (clearGb) {
+                if (clearGb && clearExinsting) {
                     grainsArray[i][j].setId(0);
-                } else if (grainsArray[i][j].getId() != -2) {
+                } else if (grainsArray[i][j].getId() != -2 && clearExinsting) {
                      grainsArray[i][j].setId(0);
                 }
             }
         }
         for (int i = 0; i < sizeX; i++) {
             for (int j = 1; j < sizeY; j++) {
-                if (clearGb) {
+                if (clearGb && clearExinsting) {
                     grainsArray[i][j].setB(false);
-                } else if (grainsArray[i][j].getId() != -2) {
+                } else if (grainsArray[i][j].getId() != -2 && clearExinsting) {
                     grainsArray[i][j].setB(false);
                 }
             }
@@ -365,7 +365,7 @@ public class Board {
         
         for (int i = 0; i < 3; i++) {
             for (int j = 0; j < 3; j++) {
-                if (tab[i][j] != 0 && tab[i][j] != -1)
+                if (tab[i][j] != 0 && tab[i][j] != -1 && tab[i][j] != -2 && tab[i][j] != -3 && tab[i][j] != -4)
                 list.add(tab[i][j]);
             }
         }
@@ -416,7 +416,7 @@ public class Board {
         HashSet<Integer> uniqueIds = new HashSet<>();
         for(int i =0;i<3;i++)
             for(int j =0;j<3;j++)
-                if(tmp[i][j] != 0) uniqueIds.add(tmp[i][j]);
+                if(tmp[i][j] != 0 && tmp[i][j] != -3 && tmp[i][j] != -2 && tmp[i][j] != -4) uniqueIds.add(tmp[i][j]);
         return uniqueIds;      
     }
     
@@ -460,7 +460,6 @@ public class Board {
                 for (int j = 0; j < sizeY; j++) {
                     if (hasBoundariesInNeighbourhood(i,j) && selectedGrainList.contains(grainsArray[i][j].getId()))
                     {
-                        System.out.println("Adding grain to set: " + grainsArray[i][j].getId());
                         grainToSet.add(grainsArray[i][j]);
                     }
                 }
@@ -516,5 +515,30 @@ public class Board {
                 }
             }
         }
+    }
+    
+    public Grain[][] removeAllGrainsExceptSelected(ArrayList<Integer> selectedGrains) {        
+        for (int i = 0; i < sizeX; i++) {
+            for (int j = 0; j < sizeY; j++) {
+                if(!selectedGrains.contains(grainsArray[i][j].getId()))
+                {
+                    grainsArray[i][j].setId(-4);
+            }}
+        }
+        return grainsArray;
+    }
+    
+    Grain[][] dualPhaseIdChange(ArrayList<Integer> selectedGrainList) {
+        for (int i = 0; i < sizeX; i++) {
+            for (int j = 0; j < sizeY; j++) {
+                 if (selectedGrainList.contains(grainsArray[i][j].getId()))
+                     grainsArray[i][j].setId(-3);
+                 else
+                     grainsArray[i][j].setId(0);
+                     grainsArray[i][j].setB(false);
+            }
+        }
+
+        return grainsArray;
     }
 }
