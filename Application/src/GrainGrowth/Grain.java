@@ -10,6 +10,9 @@ public class Grain {
     /// Variable indicating if it is boundary or not
     private boolean isBoundary = false;
     
+    /// Variable indicating if it is boundary or not
+    private boolean isBlocked = false;
+    
     private boolean r = false;
     
     /// Red color, part of RGB color palette
@@ -66,6 +69,14 @@ public class Grain {
 
     public void setB(boolean isBoundary) {
         this.isBoundary = isBoundary;
+    }
+    
+    public boolean isBlocked() {
+        return isBlocked;
+    }
+
+    public void setBlocked(boolean isBlocked) {
+        this.isBlocked = isBlocked;
     }
 
     public boolean isR() {

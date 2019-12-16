@@ -128,7 +128,7 @@ public class MainInterface extends javax.swing.JFrame {
         jLabel6 = new javax.swing.JLabel();
         inclusionsAmount = new javax.swing.JTextField();
         inclusionsSize = new javax.swing.JTextField();
-        inclusionShapeComboBox = new javax.swing.JComboBox<>();
+        inclusionShapeComboBox = new javax.swing.JComboBox<String>();
         addInclusionsButton = new javax.swing.JButton();
         radiusLabel = new javax.swing.JLabel();
         radiusText = new javax.swing.JTextField();
@@ -350,12 +350,12 @@ public class MainInterface extends javax.swing.JFrame {
 
         NeighborhoodComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Moore", "von Neumann'a", "-", "-", "-", "-", "-", "-", "Extended Moore" }));
         NeighborhoodComboBox.addPopupMenuListener(new javax.swing.event.PopupMenuListener() {
-            public void popupMenuWillBecomeVisible(javax.swing.event.PopupMenuEvent evt) {
+            public void popupMenuCanceled(javax.swing.event.PopupMenuEvent evt) {
             }
             public void popupMenuWillBecomeInvisible(javax.swing.event.PopupMenuEvent evt) {
                 NeighborhoodComboBoxPopupMenuWillBecomeInvisible(evt);
             }
-            public void popupMenuCanceled(javax.swing.event.PopupMenuEvent evt) {
+            public void popupMenuWillBecomeVisible(javax.swing.event.PopupMenuEvent evt) {
             }
         });
         NeighborhoodComboBox.addActionListener(new java.awt.event.ActionListener() {
@@ -367,12 +367,12 @@ public class MainInterface extends javax.swing.JFrame {
 
         ConditionsComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Losowe", "Stała odległość", "Stała ilość ziaren" }));
         ConditionsComboBox.addPopupMenuListener(new javax.swing.event.PopupMenuListener() {
-            public void popupMenuWillBecomeVisible(javax.swing.event.PopupMenuEvent evt) {
+            public void popupMenuCanceled(javax.swing.event.PopupMenuEvent evt) {
             }
             public void popupMenuWillBecomeInvisible(javax.swing.event.PopupMenuEvent evt) {
                 ConditionsComboBoxPopupMenuWillBecomeInvisible(evt);
             }
-            public void popupMenuCanceled(javax.swing.event.PopupMenuEvent evt) {
+            public void popupMenuWillBecomeVisible(javax.swing.event.PopupMenuEvent evt) {
             }
         });
         jPanel1.add(ConditionsComboBox, new org.netbeans.lib.awtextra.AbsoluteConstraints(970, 310, 160, 30));
@@ -465,7 +465,7 @@ public class MainInterface extends javax.swing.JFrame {
         });
         jPanel1.add(inclusionsSize, new org.netbeans.lib.awtextra.AbsoluteConstraints(660, 460, 130, -1));
 
-        inclusionShapeComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "square", "circular" }));
+        inclusionShapeComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "square", "circular" }));
         inclusionShapeComboBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 inclusionShapeComboBoxActionPerformed(evt);
@@ -711,6 +711,7 @@ public class MainInterface extends javax.swing.JFrame {
         
         boardGrain = board.clear(clearBoundariesCheckbox.isSelected(), false);     
         boardGrain = board.randomBoard(
+            selectedGrainList,
             1,              
             Integer.parseInt(randomSeedsCountText.getText()));          
         canvas.setGrains(boardGrain);                                  
@@ -1004,15 +1005,12 @@ public class MainInterface extends javax.swing.JFrame {
         boardGrain = board.removeAllGrainsExceptSelected(selectedGrainList);
         canvas.setGrains(boardGrain);
         canvas.repaint();
-        selectedGrainList.clear();
-        selectedGrainsList.setText("Selected grains list: " + selectedGrainList);
-                shouldRunSimulationLoop = false;
+        //selectedGrainList.clear();
+        //selectedGrainsList.setText("Selected grains list: " + selectedGrainList);
     }//GEN-LAST:event_substructureButtonActionPerformed
 
     private void startSimulation() {
         shouldRunSimulationLoop = true;
-        selectedGrainList = new ArrayList<>();
-        selectedGrainsList.setText("Selected grains list: " + selectedGrainList);
 
         while (shouldRunSimulationLoop) {
             iterationNumber++;
@@ -1020,7 +1018,8 @@ public class MainInterface extends javax.swing.JFrame {
             boardGrain = board.calculate(
                 NeighborhoodComboBox.getSelectedIndex(),
                 Integer.parseInt(radiusText.getText()),
-                Integer.parseInt(probabilityInput.getText())
+                Integer.parseInt(probabilityInput.getText()),
+                selectedGrainList
             );
             
             shouldRunSimulationLoop = board.ammountOfNotEmptyCells() != (sizeX * sizeY);

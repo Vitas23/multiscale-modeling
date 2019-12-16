@@ -80,7 +80,7 @@ public class Board {
         isPeriodic = !isPeriodic;
     }
 
-    public Grain[][] randomBoard(int ringSize, int countRing) {
+    public Grain[][] randomBoard(ArrayList<Integer> selectedGrainList, int ringSize, int countRing) {
         ArrayList<Point> points = new ArrayList<>();
 
         for (int i = 0; i < countRing; i++) {
@@ -104,6 +104,10 @@ public class Board {
                 }
                 if (findOk) {
                     n++;
+                    while (selectedGrainList.contains(n)) {
+                        n++;
+                    }
+
                     points.add(new Point(randX, randY, 0, n));
                     break;
                 }
@@ -121,6 +125,7 @@ public class Board {
         for (int i = 0; i < sizeX; i++) {
             for (int j = 0; j < sizeY; j++) {
                 if (clearGb && clearExinsting) {
+                    grainsArray[i][j].setBlocked(false);
                     grainsArray[i][j].setId(0);
                 } else if (grainsArray[i][j].getId() != -2 && clearExinsting) {
                      grainsArray[i][j].setId(0);
@@ -130,8 +135,10 @@ public class Board {
         for (int i = 0; i < sizeX; i++) {
             for (int j = 1; j < sizeY; j++) {
                 if (clearGb && clearExinsting) {
+                    grainsArray[i][j].setBlocked(false);
                     grainsArray[i][j].setB(false);
                 } else if (grainsArray[i][j].getId() != -2 && clearExinsting) {
+                    grainsArray[i][j].setBlocked(false);
                     grainsArray[i][j].setB(false);
                 }
             }
@@ -213,7 +220,7 @@ public class Board {
     }
     
     /// One thread calculation
-    public Grain[][] calculate(int neighborhoodType, int r, int probability) {
+    public Grain[][] calculate(int neighborhoodType, int r, int probability, ArrayList<Integer> selectedGrainList) {
         shouldEndSimulation = true;
         int tmp[][] = new int[3][3];
 
@@ -225,17 +232,20 @@ public class Board {
 
         for (int i = 0; i < sizeX; i++) {
             for (int j = 0; j < sizeY; j++) {
+                if (grainsArray[i][j].isBoundary() && grainsArray[i][j].isBlocked()) {
+                    continue;
+                }
+                
                 if (grainsArray[i][j].getId() == 0) { // if empty cell
                     shouldEndSimulation = false;
                     if (neighborhoodType == 8)
                     {
-                        temporaryBoardArray[i][j] = extendedMoorArea(i,j, probability);
+                        temporaryBoardArray[i][j] = extendedMoorArea(i,j, probability, selectedGrainList);
                     }
                     else {
                         tmp = createArea(i, j, neighborhoodType);
-                        temporaryBoardArray[i][j] = checkNeighborhood(tmp);
+                        temporaryBoardArray[i][j] = checkNeighborhood(tmp, selectedGrainList);
                     }
-
                 }
             }
         }
@@ -255,7 +265,7 @@ public class Board {
         
     private int[][] createArea(int i, int j, int neighborhoodType) {
         int tmp[][] = new int[3][3];
-
+        
         for (int k = 0; k < 3; k++) {
             for (int l = 0; l < 3; l++) {
                 int l_x = (sizeX + (i - 1 + k)) % sizeX;
@@ -287,7 +297,7 @@ public class Board {
             }
         }
 
-            switch (neighborhoodType) {
+        switch (neighborhoodType) {
             case 0: //moor
             {
                 break;
@@ -360,12 +370,12 @@ public class Board {
     }
     
     // Checks neighborhood and return ID of the seed that dominate in this area 
-    private int checkNeighborhood(int[][] tab) {  
+    private int checkNeighborhood(int[][] tab, ArrayList<Integer> selectedGrainList) {  
         List<Integer> list = new ArrayList<Integer>(); 
         
         for (int i = 0; i < 3; i++) {
             for (int j = 0; j < 3; j++) {
-                if (tab[i][j] != 0 && tab[i][j] != -1 && tab[i][j] != -2 && tab[i][j] != -3 && tab[i][j] != -4)
+                if (tab[i][j] != 0 && tab[i][j] != -1 && tab[i][j] != -2 && tab[i][j] != -3 && !selectedGrainList.contains(tab[i][j]))
                 list.add(tab[i][j]);
             }
         }
@@ -384,14 +394,14 @@ public class Board {
             Map.Entry<T, Integer> max = null;
 
         for (Map.Entry<T, Integer> e : map.entrySet()) {
-            if (max == null || e.getValue() > max.getValue())
+            if ((max == null || e.getValue() > max.getValue()))
                 max = e;
         }
 
         return max.getKey();
     }
     
-        private int extendedMoorArea(int x, int y, int probability) {
+        private int extendedMoorArea(int x, int y, int probability, ArrayList<Integer> selectedGrainList) {
         int tmp[][] = new int[3][3];
         int prob = probability > 0 && probability < 100 ? probability : 30;
         HashSet<Integer> uniqueIds = new HashSet<>();
@@ -408,7 +418,7 @@ public class Board {
         
         tmp = createArea(x ,y ,0);
         
-        if(random.nextInt(100) > (100 - prob)) return checkNeighborhood(tmp);
+        if(random.nextInt(100) > (100 - prob)) return checkNeighborhood(tmp, selectedGrainList);
         else return 0;
     }
     
@@ -416,7 +426,7 @@ public class Board {
         HashSet<Integer> uniqueIds = new HashSet<>();
         for(int i =0;i<3;i++)
             for(int j =0;j<3;j++)
-                if(tmp[i][j] != 0 && tmp[i][j] != -3 && tmp[i][j] != -2 && tmp[i][j] != -4) uniqueIds.add(tmp[i][j]);
+                if(tmp[i][j] != 0 && tmp[i][j] != -3 && tmp[i][j] != -2) uniqueIds.add(tmp[i][j]);
         return uniqueIds;      
     }
     
@@ -510,7 +520,6 @@ public class Board {
         for (int i = 0; i < sizeX; i++) {
             for (int j = 0; j < sizeY; j++) {
                 if(grainsArray[i][j].isBoundary()) {
-                    System.out.println(grainsArray[i][j].getId());
                     grainsArray[i][j].setId(-2);
                 }
             }
@@ -522,8 +531,11 @@ public class Board {
             for (int j = 0; j < sizeY; j++) {
                 if(!selectedGrains.contains(grainsArray[i][j].getId()))
                 {
-                    grainsArray[i][j].setId(-4);
-            }}
+                    grainsArray[i][j].setId(0);
+                    grainsArray[i][j].setB(false);
+                } else {
+                    grainsArray[i][j].setBlocked(true);
+                }}
         }
         return grainsArray;
     }
